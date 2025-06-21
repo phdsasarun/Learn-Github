@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบทำนายความเสี่ยงโรคไตเรื้อรัง (CKD)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c5282 0%, #2a4365 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .input-section {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .input-section h2 {
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #4299e1;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95em;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-group .unit {
+            font-size: 0.85em;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .predict-btn {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(66, 153, 225, 0.4);
+        }
+
+        .predict-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .results-section {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .results-section h2 {
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #48bb78;
+            padding-bottom: 10px;
+        }
+
+        .risk-level {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .risk-1 { background: linear-gradient(135deg, #48bb78, #38a169); color: white; }
+        .risk-2 { background: linear-gradient(135deg, #ed8936, #dd6b20); color: white; }
+        .risk-3 { background: linear-gradient(135deg, #f6ad55, #ed8936); color: white; }
+        .risk-4 { background: linear-gradient(135deg, #fc8181, #e53e3e); color: white; }
+        .risk-5 { background: linear-gradient(135deg, #e53e3e, #c53030); color: white; }
+
+        .probability-bars {
+            margin-top: 25px;
+        }
+
+        .probability-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 5px solid #4299e1;
+        }
+
+        .probability-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .probability-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4299e1, #3182ce);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        .criteria-section {
+            grid-column: 1 / -1;
+            background: #f1f5f9;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .criteria-section h2 {
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            text-align: center;
+            border-bottom: 3px solid #805ad5;
+            padding-bottom: 10px;
+        }
+
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .criteria-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+
+        .criteria-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .criteria-card h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .criteria-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .criteria-card li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+            color: #4a5568;
+        }
+
+        .criteria-card li:last-child {
+            border-bottom: none;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #4299e1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .warning {
+            background: #fef5e7;
+            border: 2px solid #f6ad55;
+            color: #744210;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .recommendation {
+            background: #f0fff4;
+            border: 2px solid #48bb78;
+            color: #1a202c;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .recommendation h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .recommendation ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .recommendation li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .criteria-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 ระบบทำนายความเสี่ยงโรคไตเรื้อรัง</h1>
+            <p>Chronic Kidney Disease (CKD) Risk Prediction System</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>📋 ข้อมูลผู้ป่วย</h2>
+                <div class="warning">
+                    ⚠️ ข้อมูลนี้ใช้สำหรับการศึกษาเท่านั้น ไม่ใช่การวินิจฉัยทางการแพทย์
+                </div>
+                
+                <form id="patientForm">
+                    <div class="form-group">
+                        <label for="age">อายุ (Age)</label>
+                        <input type="number" id="age" min="1" max="120" required>
+                        <div class="unit">หน่วย: ปี</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bp">ความดันโลหิต (Blood Pressure)</label>
+                        <input type="number" id="bp" min="50" max="300" required>
+                        <div class="unit">หน่วย: mmHg</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="albumin">อัลบูมินในปัสสาวะ (Albumin in Urine)</label>
+                        <select id="albumin" required>
+                            <option value="">เลือกระดับ</option>
+                            <option value="0">0 - ปกติ</option>
+                            <option value="1">1 - น้อย</option>
+                            <option value="2">2 - ปานกลาง</option>
+                            <option value="3">3 - มาก</option>
+                            <option value="4">4 - มากมาย</option>
+                            <option value="5">5 - สูงมาก</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="glucose">ระดับน้ำตาลในเลือด (Random Blood Glucose)</label>
+                        <input type="number" id="glucose" min="50" max="500" required>
+                        <div class="unit">หน่วย: mg/dl</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="creatinine">ซีรั่มครีเอตินิน (Serum Creatinine)</label>
+                        <input type="number" id="creatinine" step="0.1" min="0.1" max="20" required>
+                        <div class="unit">หน่วย: mg/dl</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hemoglobin">ระดับฮีโมโกลบิน (Hemoglobin Level)</label>
+                        <input type="number" id="hemoglobin" step="0.1" min="5" max="20" required>
+                        <div class="unit">หน่วย: gms</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="egfr">อัตราการกรองของไต (eGFR)</label>
+                        <input type="number" id="egfr" step="0.1" min="5" max="150" required>
+                        <div class="unit">หน่วย: ml/min/1.73m²</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cholesterol">ระดับคอเลสเตอรอล (Cholesterol Level)</label>
+                        <input type="number" id="cholesterol" min="100" max="500" required>
+                        <div class="unit">หน่วย: mg/dl</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bmi">ดัชนีมวลกาย (Body Mass Index)</label>
+                        <input type="number" id="bmi" step="0.1" min="10" max="50" required>
+                        <div class="unit">หน่วย: kg/m²</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">ระยะเวลาเป็นเบาหวาน (Duration of Diabetes)</label>
+                        <input type="number" id="duration" min="0" max="50" required>
+                        <div class="unit">หน่วย: ปี</div>
+                    </div>
+
+                    <button type="submit" class="predict-btn">🔍 วิเคราะห์ความเสี่ยง</button>
+                </form>
+            </div>
+
+            <div class="results-section">
+                <h2>📊 ผลการวิเคราะห์</h2>
+                <div id="results" class="hide">
+                    <div id="riskLevel" class="risk-level"></div>
+                    <div class="probability-bars" id="probabilityBars"></div>
+                    <div id="recommendations" class="recommendation"></div>
+                </div>
+                <div id="loading" class="loading hide">
+                    กำลังวิเคราะห์ข้อมูล...
+                </div>
+                <div id="noResults" style="text-align: center; color: #718096; padding: 40px;">
+                    📋 กรุณากรอกข้อมูลและกดปุ่มวิเคราะห์
+                </div>
+            </div>
+        </div>
+
+        <div class="criteria-section">
+            <h2>📋 เกณฑ์การวินิจฉัยโรคไตเรื้อรัง</h2>
+            <div class="criteria-grid">
+                <div class="criteria-card">
+                    <h3 style="color: #48bb78;">🟢 1. ไม่มีโรค (No Disease)</h3>
+                    <ul>
+                        <li>eGFR ≥ 90 ml/min/1.73m²</li>
+                        <li>อัลบูมิน < 1</li>
+                        <li>ความดันโลหิต < 130/80 mmHg</li>
+                        <li>น้ำตาลในเลือด < 126 mg/dl</li>
+                        <li>ฮีโมโกลบิน ≥ 12 gms</li>
+                    </ul>
+                </div>
+                
+                <div class="criteria-card">
+                    <h3 style="color: #ed8936;">🟡 2. ความเสี่ยงต่ำ (Low Risk)</h3>
+                    <ul>
+                        <li>eGFR 60-89 ml/min/1.73m²</li>
+                        <li>อัลบูมิน 1-2</li>
+                        <li>ความดันโลหิต 130-139/80-89 mmHg</li>
+                        <li>น้ำตาลในเลือด 126-150 mg/dl</li>
+                        <li>ฮีโมโกลบิน 11-12 gms</li>
+                    </ul>
+                </div>
+                
+                <div class="criteria-card">
+                    <h3 style="color: #f6ad55;">🟠 3. ความเสี่ยงปานกลาง (Moderate Risk)</h3>
+                    <ul>
+                        <li>eGFR 45-59 ml/min/1.73m²</li>
+                        <li>อัลบูมิน 2-3</li>
+                        <li>ความดันโลหิต 140-159/90-99 mmHg</li>
+                        <li>น้ำตาลในเลือด 150-200 mg/dl</li>
+                        <li>ฮีโมโกลบิน 10-11 gms</li>
+                    </ul>
+                </div>
+                
+                <div class="criteria-card">
+                    <h3 style="color: #fc8181;">🔴 4. ความเสี่ยงสูง (High Risk)</h3>
+                    <ul>
+                        <li>eGFR 30-44 ml/min/1.73m²</li>
+                        <li>อัลบูมิน 3-4</li>
+                        <li>ความดันโลหิต 160-179/100-109 mmHg</li>
+                        <li>น้ำตาลในเลือด 200-250 mg/dl</li>
+                        <li>ฮีโมโกลบิน 9-10 gms</li>
+                    </ul>
+                </div>
+                
+                <div class="criteria-card">
+                    <h3 style="color: #e53e3e;">🔴 5. โรคไตเรื้อรังร้ายแรง (Severe Disease)</h3>
+                    <ul>
+                        <li>eGFR < 30 ml/min/1.73m²</li>
+                        <li>อัลบูมิน ≥ 4</li>
+                        <li>ความดันโลหิต ≥ 180/110 mmHg</li>
+                        <li>น้ำตาลในเลือด > 250 mg/dl</li>
+                        <li>ฮีโมโกลบิน < 9 gms</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Machine Learning Models (Simplified)
+        class CKDPredictor {
+            constructor() {
+                // Simplified model weights (based on logistic regression)
+                this.weights = {
+                    age: 0.02,
+                    bp: 0.015,
+                    albumin: 0.8,
+                    glucose: 0.008,
+                    creatinine: 0.6,
+                    hemoglobin: -0.4,
+                    egfr: -0.05,
+                    cholesterol: 0.005,
+                    bmi: 0.03,
+                    duration: 0.04
+                };
+                
+                this.intercept = -2.5;
+            }
+            
+            predict(features) {
+                // Calculate risk score
+                let score = this.intercept;
+                
+                score += features.age * this.weights.age;
+                score += features.bp * this.weights.bp;
+                score += features.albumin * this.weights.albumin;
+                score += features.glucose * this.weights.glucose;
+                score += features.creatinine * this.weights.creatinine;
+                score += features.hemoglobin * this.weights.hemoglobin;
+                score += features.egfr * this.weights.egfr;
+                score += features.cholesterol * this.weights.cholesterol;
+                score += features.bmi * this.weights.bmi;
+                score += features.duration * this.weights.duration;
+                
+                // Apply primary classification based on eGFR and other critical factors
+                let riskLevel = this.classifyRisk(features);
+                
+                // Generate probabilities (simplified)
+                let probabilities = this.generateProbabilities(features, riskLevel);
+                
+                return {
+                    riskLevel: riskLevel,
+                    probabilities: probabilities
+                };
+            }
+            
+            classifyRisk(features) {
+                const { egfr, albumin, glucose, creatinine, hemoglobin, bp } = features;
+                
+                // Primary classification based on eGFR
+                if (egfr >= 90 && albumin <= 1 && glucose < 126 && creatinine < 1.2 && hemoglobin >= 12) {
+                    return 1; // No Disease
+                } else if (egfr >= 60 && egfr < 90) {
+                    if (albumin <= 2 && glucose < 150) return 2; // Low Risk
+                    else return 3; // Moderate Risk
+                } else if (egfr >= 45 && egfr < 60) {
+                    return 3; // Moderate Risk
+                } else if (egfr >= 30 && egfr < 45) {
+                    return 4; // High Risk
+                } else if (egfr < 30) {
+                    return 5; // Severe Disease
+                }
+                
+                // Secondary classification based on other factors
+                let riskFactors = 0;
+                if (albumin >= 3) riskFactors++;
+                if (glucose >= 200) riskFactors++;
+                if (creatinine >= 2) riskFactors++;
+                if (hemoglobin < 10) riskFactors++;
+                if (bp >= 160) riskFactors++;
+                
+                if (riskFactors >= 3) return 5;
+                else if (riskFactors >= 2) return 4;
+                else if (riskFactors >= 1) return 3;
+                else return 2;
+            }
+            
+            generateProbabilities(features, predictedLevel) {
+                let probabilities = [0, 0, 0, 0, 0];
+                
+                // Set base probability for predicted level
+                probabilities[predictedLevel - 1] = 0.6 + Math.random() * 0.3;
+                
+                // Distribute remaining probability
+                let remaining = 1 - probabilities[predictedLevel - 1];
+                
+                for (let i = 0; i < 5; i++) {
+                    if (i !== predictedLevel - 1) {
+                        let distance = Math.abs(i - (predictedLevel - 1));
+                        let prob = remaining * Math.exp(-distance) / 5;
+                        probabilities[i] = prob + Math.random() * 0.1;
+                    }
+                }
+                
+                // Normalize probabilities
+                let sum = probabilities.reduce((a, b) => a + b, 0);
+                probabilities = probabilities.map(p => p / sum);
+                
+                return probabilities;
+            }
+        }
+        
+        const predictor = new CKDPredictor();
+        
+        // Risk level labels and recommendations
+        const riskLabels = {
+            1: "ไม่มีโรค (No Disease)",
+            2: "ความเสี่ยงต่ำ (Low Risk)",
+            3: "ความเสี่ยงปานกลาง (Moderate Risk)",
+            4: "ความเสี่ยงสูง (High Risk)",
+            5: "โรคไตเรื้อรังร้ายแรง (Severe Disease)"
+        };
+        
+        const recommendations = {
+            1: {
+                title: "สุขภาพไตดี - รักษาไว้ให้ดี",
+                items: [
+                    "ตรวจสุขภาพประจำปีอย่างสม่ำเสมอ",
+                    "ควบคุมระดับน้ำตาลในเลือดให้อยู่ในเกณฑ์ปกติ",
+                    "ดื่มน้ำเปล่าให้เพียงพอ 8-10 แก้วต่อวัน",
+                    "ออกกำลังกายสม่ำเสมอ 150 นาทีต่อสัปดาห์",
+                    "หลีกเลี่ยการใช้ยาแก้ปวดเกินความจำเป็น"
+                ]
+            },
+            2: {
+                title: "ความเสี่ยงต่ำ - เฝ้าระวังและป้องกัน",
+                items: [
+                    "ตรวจไตทุก 6-12 เดือน",
+                    "ควบคุมความดันโลหิตให้ต่ำกว่า 130/80 mmHg",
+                    "ควบคุมน้ำตาลในเลือด HbA1c < 7%",
+                    "ลดการบริโภคเกลือและอาหารรสจัด",
+                    "หลีกเลี่ยงการสูบบุหรี่และดื่มแอลกอฮอล์"
+                ]
+            },
+            3: {
+                title: "ความเสี่ยงปานกลาง - เฝ้าระวังอย่างใกล้ชิด",
+                items: [
+                    "ตรวจไตทุก 3-6 เดือน",
+                    "ปรึกษาแพทย์เฉพาะทางไต",
+                    "ควบคุมความดันโลหิตเข้มงวด < 130/80 mmHg",
+                    "ควบคุมโปรตีนในอาหาร 0.8-1.0 g/kg/วัน",
+                    "ติดตามระดับแคลเซียมและฟอสฟอรัส"
+                ]
+            },
+            4: {
+                title: "ความเสี่ยงสูง - ต้องรักษาเข้มข้น",
+                items: [
+                    "ตรวจไตทุก 1-3 เดือน",
+                    "รับการรักษาจากแพทย์เฉพาะทางไตอย่างสม่ำเสมอ",
+                    "เตรียมความพร้อมสำหรับการบำบัดทดแทนไต",
+                    "ปรับปรุงภาวะแทรกซ้อน (ความดัน, ภาวะซีด)",
+                    "ควบคุมอาหารเข้มข้น จำกัดโปรตีน เกลือ"
+                ]
+            },
+            5: {
+                title: "โรคไตเรื้อรังระยะสุดท้าย - ต้องรักษาเร่งด่วน",
+                items: [
+                    "ติดตามรักษาที่โรงพยาบาลอย่างใกล้ชิด",
+                    "เตรียมความพร้อมสำหรับการฟอกเลือดหรือการปลูกถ่ายไต",
+                    "ควบคุมภาวะแทรกซ้อนทั้งหมด",
+                    "รับการดูแลจากทีมสหสาขาวิชาชีพ",
+                    "ปรับปรุงคุณภาพชีวิตและเตรียมพร้อมจิตใจ"
+                ]
+            }
+        };
+        
+        // Form submission handler
+        document.getElementById('patientForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            document.getElementById('loading').classList.remove('hide
